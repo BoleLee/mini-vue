@@ -36,7 +36,7 @@ class Dep {
 function effectWatch (effect) {
   // 收集依赖
   currentEffect = effect
-  // 一开始执行一次
+  // 执行依赖
   effect() // effect()在哪定义的？它是传进来的函数，就是我们要收集的依赖本身
   currentEffect = null
 }
@@ -44,9 +44,14 @@ function effectWatch (effect) {
 // demo1
 // const dep = new Dep(10)
 // let b
+// let c
 // effectWatch(() => {
 //   b = dep.value + 10 // 在dep的get中收集依赖
-//   console.log(b)
+//   console.log('b: ' + b)
+// })
+// effectWatch(() => {
+//   c = dep.value * 2 // 在dep的get中收集依赖
+//   console.log('c: ' + c)
 // })
 // // 值发生变更
 // dep.value = 20 // 在dep的set中触发依赖
@@ -64,6 +69,35 @@ function effectWatch (effect) {
 // vue3 -> proxy
 // 原理：也是拦截，但是是在对象层面拦截，性能大大改善
 
+// function reactive (raw) {
+//   // const keys = Object.keys(raw)
+//   // keys.forEach(key => {
+//   //   const val = raw[key]
+//   //   Object.defineProperty(raw, key, {
+//   //     enumerable: true,
+//   //     configuration: true,
+//   //     get: function () {
+//   //       console.log(key + ': ' + val) // 验证读取时是否被调用
+//   //       return val
+//   //     }
+//   //   })
+//   // })
+//   // return raw
+//   return new Proxy(raw, {
+//     get (target, key) {
+//       console.log(key + ': ' + target[key])
+//       return Reflect.get(target, key) // 新标准的用法，相当于 target[key]
+//     }
+//   })
+// }
+// // test
+// const user = reactive({
+//   age: 28
+// })
+// user.age
+// user.name = 'grace'
+// user.name
+
 const targetMap = new Map() // 存储对象的des
 
 function getDep (target, key) {
@@ -80,23 +114,9 @@ function getDep (target, key) {
   return  dep
 }
 function reactive (raw) {
-  // const keys = Object.keys(raw)
-  // keys.forEach(key => {
-  //   const val = raw[key]
-  //   Object.defineProperty(raw, key, {
-  //     enumerable: true,
-  //     configuration: true,
-  //     get: function () {
-  //       console.log(key)
-  //       console.log(val)
-  //       return val
-  //     }
-  //   })
-  // })
-  // return raw
   return new Proxy(raw, {
     get (target, key) {
-      console.log(key + ': ' + target[key])
+      // console.log(key + ': ' + target[key])
       // key -> dep
       // dep存储在哪里？
       const dep = getDep(target, key)
